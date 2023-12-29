@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { map } from 'rxjs';
+import { Product } from './model/products';
 
 @Component({
   selector: 'app-root',
@@ -9,6 +10,8 @@ import { map } from 'rxjs';
 })
 export class AppComponent implements OnInit{
   title = 'httprequestwithfirebase';
+  allProducts:Product[] = []
+  isFetching:boolean = false
 
   constructor(private http:HttpClient){}
 
@@ -26,21 +29,39 @@ export class AppComponent implements OnInit{
   }
 
   private fetchProducts(){
-    this.http.get('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json')
-    .subscribe((res)=>{
-      console.log(res)
-      console.log(Object.values(res))
+    this.isFetching = true
+    this.http.get<{[key:string]: Product}>('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json')
+    .pipe(map((res) => {
+      const products = []
+      for(const key in res){
+        if(res.hasOwnProperty(key)){
+          products.push({...res[key],id:key})
+        }
+      }
+      return products}))
+    .subscribe((products)=>{
+      console.log(products)
+      this.allProducts = products
+      this.isFetching = false
     })
   }
-  //pipe(map(res) => {
-  //   const products = []
-  //   for(const key in res){
-  //     if(res.hasOwnProperty(key)){
-  //       products.push({...res[key],id:key})
-  //     }
-  //   }
-  //   return products}0
 
-  
+  onProductsFetch(){
+    this.fetchProducts()
+  }
 
+  onDeleteProd(id:string){
+    this.http.delete('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products/'+id+'.json')
+    .subscribe((res)=>{
+      console.log(res)
+    })
+  }
+
+  onDeleteAllProd(){
+    this.http.delete('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json')
+    .subscribe((res)=>{
+      console.log(res)
+    })
+
+}
 }

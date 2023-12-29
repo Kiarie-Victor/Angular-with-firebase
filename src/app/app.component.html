@@ -33,18 +33,24 @@
             <th>Price</th>
             <th></th>
           </tr>
-          <tr>
-            <td>1</td>
-            <td>iPhone</td>
-            <td>iPhone Pro 11</td>
-            <td>$1299</td>
-            <td><button class="btn-delete">Delete</button></td>
+          <tr *ngIf="allProducts.length < 1 && !isFetching">
+            <td colspan="5">No products available</td>
+          </tr>
+          <tr *ngIf="isFetching">
+            <td colspan="5">Loading...</td>
+          </tr>
+          <tr *ngFor="let product of allProducts let i = index">
+            <td>{{i + 1}}</td>
+            <td>{{product.pname}}</td>
+            <td>{{product.desc}}</td>
+            <td>{{product.price}}</td>
+            <td><button class="btn-delete" (click)="onDeleteProd(product.id)">Delete</button></td>
           </tr>
         </table>
         <hr>
         <div class="action-btn-container">
-          <button class="btn-fetch">Fetch Product</button>
-          <button class="btn-clear">Clear Product</button>
+          <button class="btn-fetch" (click)="onProductsFetch()">Fetch Product</button>
+          <button class="btn-clear" (click)="onDeleteAllProd()">Clear Product</button>
         </div>
       </div>
     </div>
