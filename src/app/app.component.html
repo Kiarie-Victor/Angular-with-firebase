@@ -36,7 +36,10 @@
           <tr *ngIf="allProducts.length < 1 && !isFetching">
             <td colspan="5">No products available</td>
           </tr>
-          <tr *ngIf="isFetching">
+          <tr *ngIf="errorMessage">
+            <td colspan="5">{{errorMessage}}</td>
+          </tr>
+          <tr *ngIf="isFetching && !errorMessage">
             <td colspan="5">Loading...</td>
           </tr>
           <tr *ngFor="let product of allProducts let i = index">

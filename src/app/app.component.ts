@@ -1,25 +1,34 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Product } from './model/products';
 import { ProductsService } from './Service/products.service';
 import { NgForm } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit{
+export class AppComponent implements OnInit, OnDestroy{
   title = 'httprequestwithfirebase';
   allProducts:Product[] = []
   isFetching:boolean = false
   editMode:boolean = false
   currentProductId :string;
+  errorMessage:string = null
+  errorSub : Subscription
   @ViewChild('productsForm') form :NgForm
 
   constructor( private service:ProductsService){}
+  ngOnDestroy(): void {
+    this.errorSub.unsubscribe()
+  }
 
   ngOnInit(){
     this.fetchProducts()
+    this.errorSub = this.service.error.subscribe((errorMessage) =>{
+      this.errorMessage = errorMessage
+    })
   }
 
   onProductCreate(products : {pname:string, desc : string, price: string}){
@@ -37,6 +46,8 @@ export class AppComponent implements OnInit{
       console.log(products)
       this.allProducts = products
       this.isFetching = false
+    }, (err)=>{
+      this.errorMessage = err.message 
     })
   }
 

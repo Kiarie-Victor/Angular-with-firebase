@@ -1,20 +1,24 @@
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { map } from "rxjs/operators";
+import { catchError, map } from "rxjs/operators";
 import { Product } from "../model/products";
+import { Subject, throwError } from "rxjs";
 
 @Injectable({
     providedIn:'root'
 })
 export class ProductsService{
+    error = new Subject<string>()
     constructor (private http:HttpClient){}
 
     createProduct(products : {pname:string, desc : string, price: string}){
         console.log(products)
         const headers = new HttpHeaders({'name':'victor'})
-        this.http.post('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json',products,{headers:headers})
+        this.http.post('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.jsons',products,{headers:headers})
         .subscribe((res)=>{
         console.log(res)
+        }, (err)=>{
+            this.error.next(err.message)
         })
 
     }
@@ -29,7 +33,9 @@ export class ProductsService{
             products.push({...res[key],id:key})
             }
         }
-        return products}))
+        return products}),catchError((error)=>{
+            return throwError(error)
+        }))
 
     }
 
