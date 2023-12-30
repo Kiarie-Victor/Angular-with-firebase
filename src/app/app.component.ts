@@ -1,7 +1,7 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
-import { map } from 'rxjs';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Product } from './model/products';
+import { ProductsService } from './Service/products.service';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
@@ -12,33 +12,27 @@ export class AppComponent implements OnInit{
   title = 'httprequestwithfirebase';
   allProducts:Product[] = []
   isFetching:boolean = false
+  editMode:boolean = false
+  currentProductId :string;
+  @ViewChild('productsForm') form :NgForm
 
-  constructor(private http:HttpClient){}
+  constructor( private service:ProductsService){}
 
   ngOnInit(){
     this.fetchProducts()
   }
 
   onProductCreate(products : {pname:string, desc : string, price: string}){
-    console.log(products)
-    const headers = new HttpHeaders({'name':'victor'})
-    this.http.post('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json',products,{headers:headers})
-    .subscribe((res)=>{
-      console.log(res)
-    })
+    if(this.editMode){
+      this.service.createProduct(products)
+    }
+    else
+      this.service.updateProduct(products, this.currentProductId)
   }
 
   private fetchProducts(){
     this.isFetching = true
-    this.http.get<{[key:string]: Product}>('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json')
-    .pipe(map((res) => {
-      const products = []
-      for(const key in res){
-        if(res.hasOwnProperty(key)){
-          products.push({...res[key],id:key})
-        }
-      }
-      return products}))
+    this.service.fetchProduct()
     .subscribe((products)=>{
       console.log(products)
       this.allProducts = products
@@ -51,17 +45,27 @@ export class AppComponent implements OnInit{
   }
 
   onDeleteProd(id:string){
-    this.http.delete('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products/'+id+'.json')
-    .subscribe((res)=>{
-      console.log(res)
-    })
+    this.service.deleteProduct(id);
   }
 
   onDeleteAllProd(){
-    this.http.delete('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json')
-    .subscribe((res)=>{
-      console.log(res)
-    })
+    this.service.deleteAllProduct()
 
 }
-}
+  onEditProd(id){
+    this.currentProductId = id
+    let currentProduct = this.allProducts.find((p)=> {
+      return p.id == id
+      })
+      
+      this.form.form.patchValue({
+        pname: currentProduct.pname,
+        desc: currentProduct.desc,
+        price: currentProduct.price
+      })
+
+      this.editMode = true
+    }
+
+  }
+
