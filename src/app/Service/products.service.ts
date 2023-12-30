@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { catchError, map } from "rxjs/operators";
 import { Product } from "../model/products";
@@ -14,7 +14,7 @@ export class ProductsService{
     createProduct(products : {pname:string, desc : string, price: string}){
         console.log(products)
         const headers = new HttpHeaders({'name':'victor'})
-        this.http.post('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.jsons',products,{headers:headers})
+        this.http.post('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json',products,{headers:headers})
         .subscribe((res)=>{
         console.log(res)
         }, (err)=>{
@@ -24,8 +24,13 @@ export class ProductsService{
     }
 
     fetchProduct(){
-
-       return this.http.get<{[key:string]: Product}>('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json')
+        const header = new HttpHeaders()
+        .set('content-type','application/json')
+        .set('Access-Control-Allow-Origin', '*')
+        const params = new HttpParams()
+        .set('print','pretty')
+        .set('pageNum', '1')
+       return this.http.get<{[key:string]: Product}>('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products.json', {headers:header, params:params})
         .pipe(map((res) => {
         const products = []
         for(const key in res){
@@ -40,7 +45,10 @@ export class ProductsService{
     }
 
     deleteProduct(id:string){
-        this.http.delete('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products/'+id+'.json')
+        let header = new HttpHeaders();
+        header = header.append('myHeaders1', 'Value1')
+        header = header.append('myHeaders2', 'Value2')
+        this.http.delete('https://angular-proj-19fb8-default-rtdb.firebaseio.com/products/'+id+'.json', {headers:header})
         .subscribe((res)=>{
         console.log(res)
         })
